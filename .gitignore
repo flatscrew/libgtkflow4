@@ -1,0 +1,4 @@
+!drawinghelper.c
+*.c
+.*.sw*
+build/
