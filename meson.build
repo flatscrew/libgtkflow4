@@ -41,7 +41,10 @@ src = files([
     'init.vala'
 ])
 
-gtkflow4_api = '0.2'
+fs = import('fs')
+
+version_file = join_paths(meson.project_source_root(), 'VERSION')
+gtkflow4_api = fs.read(version_file).strip()
 
 gtkflow4_deps = [glib, gobject, gflow, gtk4, math]
 gtkflow4_links = []
