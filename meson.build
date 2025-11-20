@@ -24,7 +24,6 @@ pkgconfig = import('pkgconfig')
 
 gflow_dep_api = '1.0'
 
-
 glib = dependency('glib-2.0')
 gobject = dependency('gobject-2.0')
 gflow = dependency('gflow-' + gflow_dep_api)
@@ -49,7 +48,6 @@ gtkflow4_api = fs.read(version_file).strip()
 gtkflow4_deps = [glib, gobject, gflow, gtk4, math]
 gtkflow4_links = []
 gtkflow4_include_dirs = []
-
 
 gtkflow4 = library('gtkflow4-' + gtkflow4_api,
                   src,
@@ -114,3 +112,5 @@ if get_option('enable_valadoc')
                    install_dir: get_option('datadir') + '/devhelp/books',
                    )
 endif
+
+subdir('gtkflow4-demo')
