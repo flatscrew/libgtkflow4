@@ -110,14 +110,14 @@ namespace GtkFlow {
      */
     public class Node : Gtk.Widget, NodeRenderer  {
         private const double DRAG_THRESHOLD = 5.0;
+        private const int DRAG_AREA_SIZE = 32;
+        private const int MARGIN_DEFAULT = 10;
 
         private bool title_initialized = false;
 
         construct {
             this.notify["marked"].connect(this.marked_changed);
         }
-
-        private const int MARGIN_DEFAULT = 10;
 
         private Gtk.Grid pads_grid;
         private Gtk.Box node_box;
@@ -207,7 +207,6 @@ namespace GtkFlow {
             this.margin = margin;
             
             this.set_layout_manager(new Gtk.BinLayout());
-            //  this.get_style_context().add_provider(Node.css, Gtk.STYLE_PROVIDER_PRIORITY_USER);
 
             this.node_box = new Gtk.Box(Gtk.Orientation.VERTICAL, 0);
             this.node_box.set_parent(this);
@@ -224,24 +223,8 @@ namespace GtkFlow {
             create_pads_grid();
             create_drag_drop_controller();
             create_motion_controller();
-            create_event_override_controller();
             
             this.add_css_class("gtkflow_node");
-        }
-
-        private void create_event_override_controller() {
-            var controller = new Gtk.EventControllerLegacy();
-            controller.set_propagation_phase(Gtk.PropagationPhase.CAPTURE);
-            controller.event.connect((ev) => {
-                if (drag_active &&
-                    (ev.get_event_type() == Gdk.EventType.BUTTON_PRESS ||
-                    ev.get_event_type() == Gdk.EventType.BUTTON_RELEASE ||
-                    ev.get_event_type() == Gdk.EventType.DRAG_ENTER)) {
-                    return Gdk.EVENT_STOP;
-                }
-                return Gdk.EVENT_PROPAGATE;
-            });
-            this.add_controller(controller);
         }
 
         private void create_drag_drop_controller() {
@@ -463,10 +446,10 @@ namespace GtkFlow {
 
         private Gdk.Rectangle resize_area() {
             return {
-                this.get_width() - 16, 
-                this.get_height() - 16,
-                16,
-                16
+                this.get_width() - DRAG_AREA_SIZE, 
+                this.get_height() - DRAG_AREA_SIZE,
+                DRAG_AREA_SIZE,
+                DRAG_AREA_SIZE
             };
         }
 
@@ -501,14 +484,27 @@ namespace GtkFlow {
         private bool is_drag_forbidden(Gtk.Widget? widget) {
             if (widget == null)
                 return false;
-        
+            
             Gtk.Widget? current = widget;
             while (current != null) {
-                if (widget is Dock) {
+                if (widget is Dock || is_child_of(widget, typeof(Gtk.Switch))) {
                     return true;
                 }
                 current = current.get_parent();
             }
+            return false;
+        }
+        
+        private bool is_child_of(Gtk.Widget widget, GLib.Type parent_type) {
+            var parent = widget.get_parent();
+        
+            while (parent != null) {
+                if (parent.get_type().is_a(parent_type)) {
+                    return true;
+                }
+                parent = parent.get_parent();
+            }
+        
             return false;
         }
 
