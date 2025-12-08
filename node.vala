@@ -119,6 +119,7 @@ namespace GtkFlow {
             this.notify["marked"].connect(this.marked_changed);
         }
 
+        private Gtk.Button delete_button;
         private Gtk.Grid pads_grid;
         private Gtk.Box node_box;
         private Gtk.GestureDrag drag_gesture;
@@ -188,7 +189,7 @@ namespace GtkFlow {
             title_box.append(title_label);
 
             var delete_icon = new Gtk.Image.from_icon_name("edit-delete");
-            var delete_button = new Gtk.Button();
+            this.delete_button = new Gtk.Button();
             delete_button.child = delete_icon;
             delete_button.has_frame = false;
             delete_button.clicked.connect(this.remove);
@@ -481,30 +482,29 @@ namespace GtkFlow {
             this.previous_height = get_height();
         }
 
-        private bool is_drag_forbidden(Gtk.Widget? widget) {
-            if (widget == null)
+        protected virtual bool is_drag_forbidden(Gtk.Widget? widget) {
+            Gtk.Widget? current = widget;
+            
+            if (current == null)
                 return false;
             
-            Gtk.Widget? current = widget;
-            while (current != null) {
-                if (widget is Dock || is_child_of(widget, typeof(Gtk.Switch))) {
+            if (current is Dock) {
+                return true;
+            }    
+            
+            if (this.delete_button != null) {
+                if (widget == this.delete_button) {
                     return true;
                 }
-                current = current.get_parent();
+                
+                while (current != null) {
+                    if (current == this.delete_button) {
+                        return true;
+                    }
+                    current = current.get_parent();
+                }    
             }
-            return false;
-        }
-        
-        private bool is_child_of(Gtk.Widget widget, GLib.Type parent_type) {
-            var parent = widget.get_parent();
-        
-            while (parent != null) {
-                if (parent.get_type().is_a(parent_type)) {
-                    return true;
-                }
-                parent = parent.get_parent();
-            }
-        
+            
             return false;
         }
 
