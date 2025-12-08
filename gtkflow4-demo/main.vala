@@ -33,10 +33,8 @@ class CustomNode : GtkFlow.Node {
         custom_css.load_from_data(CSS.data);
         get_style_context().add_provider(custom_css,Gtk.STYLE_PROVIDER_PRIORITY_USER);
 
-
         this.position_changed.connect(this.debug_position_changed);
         this.size_changed.connect(this.debug_size_changed);
-     
     }
 
     private void debug_position_changed(int old_x, int old_y, int new_x, int new_y) {
