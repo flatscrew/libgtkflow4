@@ -492,8 +492,6 @@ namespace GtkFlow {
         internal signal void draw_minimap();
 
         protected override void snapshot (Gtk.Snapshot sn) {
-            base.snapshot(sn);
-            
             var rect = Graphene.Rect().init(0,0,(float)this.get_width(), (float)this.get_height());
             var cr = sn.append_cairo(rect);
 
@@ -552,17 +550,23 @@ namespace GtkFlow {
                 c = c.get_next_sibling();
             }
             
+            base.snapshot(sn);
             this.draw_minimap();
             
+            var rect2 = Graphene.Rect().init(0,0,(float)this.get_width(), (float)this.get_height());
+            var cr2 = sn.append_cairo(rect2);
+
             if (this.temp_connector != null) {
                 color = this.temp_connected_dock.resolve_color(
                     this.temp_connected_dock, this.temp_connected_dock.last_value
                 );
                 var nr = this.retrieve_node(this.temp_connected_dock.d.node);
-                cr.save();
-                cr.set_source_rgba(color.red, color.green, color.blue, color.alpha);
-                cr.move_to(this.temp_connector.x+nr.get_margin(), this.temp_connector.y+nr.get_margin());
-                cr.rel_curve_to(
+
+                cr2.save();
+                cr2.set_source_rgba(color.red, color.green, color.blue, color.alpha);
+                cr2.move_to(this.temp_connector.x+nr.get_margin(),
+                            this.temp_connector.y+nr.get_margin());
+                cr2.rel_curve_to(
                     this.temp_connector.width/3,
                     0,
                     2*this.temp_connector.width/3,
@@ -570,20 +574,21 @@ namespace GtkFlow {
                     this.temp_connector.width,
                     this.temp_connector.height
                 );
-                cr.stroke();
-                cr.restore();
+                cr2.stroke();
+                cr2.restore();
             }
-            
+
             if (this.mark_rubberband != null) {
-                cr.save();
-                cr.set_source_rgba(0.0, 0.2, 0.9, 0.4);
-                cr.rectangle(
+                cr2.save();
+                cr2.set_source_rgba(0.0, 0.2, 0.9, 0.4);
+                cr2.rectangle(
                     this.mark_rubberband.x, this.mark_rubberband.y,
                     this.mark_rubberband.width, this.mark_rubberband.height
                 );
-                cr.fill();
-                cr.set_source_rgba(0.0, 0.2, 1.0, 1.0);
-                cr.stroke();
+                cr2.fill();
+                cr2.set_source_rgba(0.0, 0.2, 1.0, 1.0);
+                cr2.stroke();
+                cr2.restore();
             }
         }
     }
