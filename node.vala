@@ -166,9 +166,9 @@ namespace GtkFlow {
         public signal void position_changed(int old_x, int old_y, int new_x, int new_y);
         public signal void size_changed(int old_width, int old_height, int new_width, int new_height);
 
-        private int n_docks = 0;
+        private int sink_count = 0;
+        private int source_count = 0;
         private int margin = 0;
-
         
         ~Node() {
             this.pads_grid.unparent();
@@ -331,13 +331,16 @@ namespace GtkFlow {
         /**
          * {@inheritDoc}
          */
-        private void sink_added(GFlow.Sink s) {
+         private void sink_added(GFlow.Sink s) {
             var dock = new Dock(s);
             var dock_label = dock_label_factory.create_dock_label(dock.d);
             dock_label.halign = Gtk.Align.START;
-            
-            this.pads_grid.attach(dock, 0, 1 + ++n_docks, 1, 1);
-            this.pads_grid.attach(dock_label, 1, 1 + n_docks, 1, 1);
+        
+            int row = 1 + sink_count;
+            sink_count++;
+        
+            this.pads_grid.attach(dock, 0, row, 1, 1);
+            this.pads_grid.attach(dock_label, 1, row, 1, 1);
         }
 
         private void sink_removed(GFlow.Sink s) {
@@ -357,9 +360,12 @@ namespace GtkFlow {
             var dock = new Dock(s);
             var dock_label = dock_label_factory.create_dock_label(dock.d);
             dock_label.halign = Gtk.Align.END;
-            
-            this.pads_grid.attach(dock, 2, 1 + ++n_docks, 1, 1);
-            this.pads_grid.attach(dock_label, 1, 1 + n_docks, 1, 1);
+        
+            int row = 1 + source_count;
+            source_count++;
+        
+            this.pads_grid.attach(dock, 2, row, 1, 1);
+            this.pads_grid.attach(dock_label, 1, row, 1, 1);
         }
 
         private void source_removed(GFlow.Source s) {
