@@ -132,6 +132,9 @@ namespace GtkFlow {
         private int previous_y;
         private int previous_width;
         private int previous_height;
+        
+        private double last_mouse_x;
+        private double last_mouse_y;
 
         public GFlow.Node n {get; protected set;}
         private NodeDockLabelWidgetFactory dock_label_factory;
@@ -417,6 +420,12 @@ namespace GtkFlow {
             if (!this.n.resizable || this.drag_active) {
                 return;
             }
+            
+            if (this.last_mouse_x == x && this.last_mouse_y == y) {
+                return;
+            } 
+            this.last_mouse_x = x;
+            this.last_mouse_y = y;
 
             Gdk.Rectangle resize_area = resize_area();
             if (resize_area.contains_point((int)x,(int)y)) {
@@ -465,6 +474,7 @@ namespace GtkFlow {
                 return;
             }
 
+            
             this.allow_drag = true;
             this.drag_start_x = start_x;
             this.drag_start_y = start_y;
@@ -532,6 +542,8 @@ namespace GtkFlow {
                     node_view.resize_node = this;
                     this.resize_start_width = this.get_width();
                     this.resize_start_height = this.get_height();
+                    
+                    set_cursor("nwse-resize");
                 } else {
                     node_view.move_node = this;
                     set_cursor("move");
@@ -584,18 +596,18 @@ namespace GtkFlow {
 
         private new void set_cursor(string? cursor_name) {
             var native = this.get_native();
-            if (native != null) {
-                var surface = native.get_surface();
-
-                if (cursor_name == null) {
-                    surface.set_cursor(null);
-                    return;
-                }
-    
-                var cursor = new Gdk.Cursor.from_name("move", null);
-                if (surface != null)
-                    surface.set_cursor(cursor);
+            if (native == null) return;
+        
+            var surface = native.get_surface();
+            if (surface == null) return;
+        
+            if (cursor_name == null) {
+                surface.set_cursor(null);
+                return;
             }
+        
+            var cursor = new Gdk.Cursor.from_name(cursor_name, null);
+            surface.set_cursor(cursor);
         }
 
         private void reset_cursor() {
