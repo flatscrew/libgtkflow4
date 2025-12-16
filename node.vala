@@ -109,6 +109,11 @@ namespace GtkFlow {
      * To wrap your {@link GFlow.Node}s in order to add them to a {@link NodeView}
      */
     public class Node : Gtk.Widget, NodeRenderer  {
+        public signal void position_changed(int old_x, int old_y, int new_x, int new_y);
+        public signal void size_changed(int old_width, int old_height, int new_width, int new_height);
+        public signal void drag_started(double start_x, double start_y);
+        public signal void drag_ended(double offset_x, double offset_y);
+        
         private const double DRAG_THRESHOLD = 5.0;
         private const int DRAG_AREA_SIZE = 32;
         private const int MARGIN_DEFAULT = 10;
@@ -162,9 +167,6 @@ namespace GtkFlow {
          * {@inheritDoc}
          */
         public double resize_start_height {get; protected set; default=0;}
-
-        public signal void position_changed(int old_x, int old_y, int new_x, int new_y);
-        public signal void size_changed(int old_width, int old_height, int new_width, int new_height);
 
         private int sink_count = 0;
         private int source_count = 0;
@@ -488,7 +490,6 @@ namespace GtkFlow {
 
             var node_view = this.get_parent() as NodeView;
             if (node_view == null) return;
-
             node_view.bring_node_to_front(this);
         
             var layout_child = node_view.layout_manager.get_layout_child(this) as NodeViewLayoutChild;
@@ -538,6 +539,8 @@ namespace GtkFlow {
                     return;
                 }
 
+                this.drag_started(drag_start_x, drag_start_y);
+                
                 this.drag_active = true;
                 this.click_offset_x = this.drag_start_x; 
                 this.click_offset_y = this.drag_start_y;
@@ -581,6 +584,7 @@ namespace GtkFlow {
             node_view.move_node = null;
             node_view.resize_node = null;
             this.drag_active = false;
+            this.drag_ended(offset_x, offset_y);
 
             node_view.queue_resize();
             node_view.queue_allocate();
